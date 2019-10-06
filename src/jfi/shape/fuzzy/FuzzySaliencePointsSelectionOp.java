@@ -1,10 +1,10 @@
 package jfi.shape.fuzzy;
 
+import jfi.shape.Contour;
 import java.awt.geom.Point2D;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Map;
-import jfi.shape.Contour;
 
 /**
  * Class implementing the contour salience points selection operator. This
