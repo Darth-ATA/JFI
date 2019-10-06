@@ -1,6 +1,6 @@
 package jfi.shape.relevantspoints;
 
-import javafx.util.Pair;
+import jfi.utils.Pair;
 import jfi.shape.Contour;
 
 import java.awt.geom.Point2D;
@@ -61,8 +61,8 @@ public class ScaleSpaceDetector {
                     Integer iEndIndex = relevantScaleIndex.get((i + 1) % relevantScaleIndex.size());
                     Pair<Integer, Integer> pairPointIndex = new Pair(iStartIndex, iEndIndex);
                     pairPointIndex = interestPointScaleTrajectory(sigmaScalesRelevantIndex, pairPointIndex);
-                    iStartIndex = pairPointIndex.getKey();
-                    iEndIndex = pairPointIndex.getValue();
+                    iStartIndex = pairPointIndex.getLeft();
+                    iEndIndex = pairPointIndex.getRight();
                     Point2D iStartPoint = startContour.get(iStartIndex);
                     Point2D iEndPoint = startContour.get(iEndIndex);
 
@@ -82,7 +82,7 @@ public class ScaleSpaceDetector {
             }
             else if (relevantScaleIndex.size() > 0) {
                 Integer iStartIndex = relevantScaleIndex.get(0);
-                relevantMultiScaleIndexSet.add(interestPointScaleTrajectory(sigmaScalesRelevantIndex, iStartIndex));
+                //relevantMultiScaleIndexSet.add(interestPointScaleTrajectory(sigmaScalesRelevantIndex, iStartIndex));
             }
             else if (sigmaScalesRelevantIndex.size() > 1){
                 List<List<Integer>> iSigmaScalesIndex = new ArrayList(sigmaScalesRelevantIndex);
@@ -107,18 +107,18 @@ public class ScaleSpaceDetector {
      */
     private Pair<Integer, Integer> interestPointScaleTrajectory(List<List<Integer>> sigmaScalesInterestIndex,
             Pair<Integer, Integer> pairPointIndex){
-        int nearestStartIndex = pairPointIndex.getKey();
-        int nearestEndIndex = pairPointIndex.getValue();
+        int nearestStartIndex = pairPointIndex.getLeft();
+        int nearestEndIndex = pairPointIndex.getRight();
         int indexPointMinDistance = Integer.MAX_VALUE;
         int iPointIndex;
         int iIndexPointDistance;
         List<Integer> pointsIndex;
-        boolean inverted = (pairPointIndex.getValue() - pairPointIndex.getKey()) < 0;
+        boolean inverted = (pairPointIndex.getRight() - pairPointIndex.getLeft()) < 0;
         for (int j = sigmaScalesInterestIndex.size() - 1; j >= 0; j--){
             pointsIndex = sigmaScalesInterestIndex.get(j);
             for (int i = 0; i < pointsIndex.size(); i++) {
                 iPointIndex = pointsIndex.get(i);
-                iIndexPointDistance = Math.abs(pairPointIndex.getKey() - iPointIndex);
+                iIndexPointDistance = Math.abs(pairPointIndex.getLeft() - iPointIndex);
                 if (iIndexPointDistance < indexPointMinDistance) {
                     nearestStartIndex = iPointIndex;
                     indexPointMinDistance = iIndexPointDistance;
@@ -129,7 +129,7 @@ public class ScaleSpaceDetector {
                 iPointIndex = pointsIndex.get(i);
                 if ((inverted && (iPointIndex - nearestStartIndex) < 0) 
                         || (!inverted && iPointIndex != nearestStartIndex)){
-                    iIndexPointDistance = Math.abs(pairPointIndex.getValue() - iPointIndex);
+                    iIndexPointDistance = Math.abs(pairPointIndex.getRight() - iPointIndex);
                     if (iIndexPointDistance < indexPointMinDistance) {
                         nearestEndIndex = iPointIndex;
                         indexPointMinDistance = iIndexPointDistance;
@@ -193,7 +193,7 @@ public class ScaleSpaceDetector {
             iEndPoint = originalContour.get(iEndIndex);
             originalSegment = originalContour.getSegment(iStartPoint, iEndPoint);
             iError = errorSegments(originalSegment, iStartPoint, iEndPoint);
-            if (iError < minError.getValue()){
+            if (iError < minError.getRight()){
                 minError = new Pair<>(i, iError);
             }
         }
@@ -223,7 +223,7 @@ public class ScaleSpaceDetector {
             iEndPoint = originalContour.get(iEndIndex);
             firstSegment = originalContour.getSegment(iStartPoint, iEndPoint);
             iFirstError = errorSegments(firstSegment, iStartPoint, iEndPoint);
-            if (iFirstError < minError.getValue()){
+            if (iFirstError < minError.getRight()){
                 minError = new Pair<>(i, iFirstError);
             }
         }
@@ -240,8 +240,8 @@ public class ScaleSpaceDetector {
         List<Integer> minRelevantMultiScaleIndex = new ArrayList<>(relevantMultiScaleIndex);
         Pair<Integer, Double> iMinIndexError = minCriticsIndexError(originalContour, minRelevantMultiScaleIndex);
         int removableIndex;
-        while(iMinIndexError.getValue() <= threshold && minRelevantMultiScaleIndex.size() > 2){
-            removableIndex = iMinIndexError.getKey();
+        while(iMinIndexError.getRight() <= threshold && minRelevantMultiScaleIndex.size() > 2){
+            removableIndex = iMinIndexError.getLeft();
             minRelevantMultiScaleIndex.remove(removableIndex);
             iMinIndexError = minCriticsIndexError(originalContour, minRelevantMultiScaleIndex);
         }
