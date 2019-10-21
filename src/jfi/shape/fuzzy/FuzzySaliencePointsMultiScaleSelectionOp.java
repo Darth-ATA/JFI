@@ -1,5 +1,6 @@
 package jfi.shape.fuzzy;
 
+import jfi.fuzzy.Iterable;
 import jfi.shape.Contour;
 import jfi.utils.Pair;
 
@@ -24,7 +25,7 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
      * @param q point.
      * @return the euclidean distance between p and q.
      */
-    private double euclideanDistance2D(Point2D p, Point2D q){
+    private static double euclideanDistance2D(Point2D p, Point2D q){
         return Math.sqrt(Math.pow(p.getX() - q.getX(), 2) + Math.pow(p.getY() - q.getY(), 2));
     }
 
@@ -116,7 +117,7 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
      * @param point the point for find the nearest point.
      * @return the nearest point.
      */
-    private Point2D nearestPoint(Contour contour, Point2D point){
+    private static Point2D nearestPoint(Contour contour, Point2D point){
         double pointMinDistance = Double.MAX_VALUE;
         double iPointDistance;
         Point2D nearestPoint = point;
@@ -136,7 +137,7 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
      * @param point the point for find the nearest point.
      * @return the nearest point.
      */
-    private Point2D nearestPoint(List<Point2D> listPoint, Point2D point){
+    private static Point2D nearestPoint(List<Point2D> listPoint, Point2D point){
         double pointMinDistance = Double.MAX_VALUE;
         double iPointDistance;
         Point2D nearestPoint = point;
@@ -156,14 +157,14 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
      * @return each scale with their points trajectory.
      */
     private Map<Double, Map<Point2D, List<Point2D>>> pointsTrajectory(Map<Double, FuzzyContour> scalesSaliencePoints){
-        Map<Double, Map<Point2D, List<Point2D>>> pointsTrajectory = new ConcurrentHashMap();
-        List<Double> sigmaList = new ArrayList(scalesSaliencePoints.keySet());
+        Map<Double, Map<Point2D, List<Point2D>>> pointsTrajectory = new ConcurrentHashMap<>();
+        List<Double> sigmaList = new ArrayList<>(scalesSaliencePoints.keySet());
         Collections.sort(sigmaList);
 
         for (int i = 0; i < sigmaList.size() - 1; i++){
             double currentSigma = sigmaList.get(i);
             double nextSigma = sigmaList.get(i+1);
-            Map<Point2D, List<Point2D>> pointsCorrespondence = new ConcurrentHashMap();
+            Map<Point2D, List<Point2D>> pointsCorrespondence = new ConcurrentHashMap<>();
             Contour currentPoints = scalesSaliencePoints.get(currentSigma).getContourReferenceSet();
             Contour nextPoints = scalesSaliencePoints.get(nextSigma).getContourReferenceSet();
             currentPoints.forEach(point -> {
@@ -174,7 +175,7 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
                     pointsCorrespondence.replace(nearestPoint, nearestCorrespondence);
                 }
                 else {
-                    List<Point2D> nearestCorrespondence = new ArrayList();
+                    List<Point2D> nearestCorrespondence = new ArrayList<>();
                     nearestCorrespondence.add(point);
                     pointsCorrespondence.put(nearestPoint, nearestCorrespondence);
                 }
@@ -212,13 +213,13 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
      */
     private List<Point2D> pointOriginalScaleTrajectory(Map<Double, Map<Point2D, List<Point2D>>> pointsTrajectoryTree, Double sigma, Point2D point){
         List<Point2D> originalScaleCorrespondence = new ArrayList<>();
-        List<Double> sigmaList = new ArrayList(pointsTrajectoryTree.keySet());
+        List<Double> sigmaList = new ArrayList<>(pointsTrajectoryTree.keySet());
         Collections.sort(sigmaList);
         originalScaleCorrespondence.add(point);
         for (int i = sigmaList.indexOf(sigma); i >= 0; i--) {
             double iSigma = sigmaList.get(i);
             Map<Point2D, List<Point2D>> correspondencePoints = pointsTrajectoryTree.get(iSigma);
-            List<Point2D> listOfPoints = new ArrayList(correspondencePoints.keySet());
+            List<Point2D> listOfPoints = new ArrayList<>(correspondencePoints.keySet());
             List<Point2D> newOriginalScaleCorrespondence = new ArrayList<>();
             for (Point2D pointCorrespondence : originalScaleCorrespondence) {
                 newOriginalScaleCorrespondence.addAll(correspondencePoints.get(nearestPoint(listOfPoints, pointCorrespondence)));
@@ -287,7 +288,7 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
                     List<Point2D> pointsOriginal = new ArrayList<>(startPointsOriginal);
                     pointsOriginal.addAll(endPointsOriginal);
 
-                    Map<Double, FuzzyContour> iSigmaScales = new ConcurrentHashMap(sigmaScalesSaliencePoints);
+                    Map<Double, FuzzyContour> iSigmaScales = new ConcurrentHashMap<>(sigmaScalesSaliencePoints);
 
                     double segmentsError = errorSegments(originalContour, pointsOriginal);
                     saliencePointsSet.addAll(startPointsOriginal);
@@ -302,7 +303,7 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
                 }
             }
             else if (segmentSaliencePoints.size() > 0) {
-                Map<Double, FuzzyContour> iSigmaScales = new ConcurrentHashMap(sigmaScalesSaliencePoints);
+                Map<Double, FuzzyContour> iSigmaScales = new ConcurrentHashMap<>(sigmaScalesSaliencePoints);
                 iSigmaScales.remove(maxSigma);
                 saliencePointsSet.addAll(getSalienceMultiScale(originalContour, start, end,
                         iSigmaScales, threshold, pointsTrajectoryTree));
@@ -310,12 +311,12 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
                 saliencePointsSet.addAll(pointOriginalScaleTrajectory(pointsTrajectoryTree, maxSigma, endPoint));
             }
             else if (sigmaScalesSaliencePoints.size() > 1){
-                Map<Double, FuzzyContour> iSigmaScales = new ConcurrentHashMap(sigmaScalesSaliencePoints);
+                Map<Double, FuzzyContour> iSigmaScales = new ConcurrentHashMap<>(sigmaScalesSaliencePoints);
                 iSigmaScales.remove(maxSigma);
                 saliencePointsSet.addAll(getSalienceMultiScale(originalContour, start, end,
                         iSigmaScales, threshold, pointsTrajectoryTree));
             }
-            return new ArrayList(saliencePointsSet);
+            return new ArrayList<>(saliencePointsSet);
         }
         else{
             return new ArrayList<>();
@@ -329,18 +330,20 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
      * @return the point and his associate error.
      */
     private static Pair<Point2D, Double> minSalienceError(Contour originalContour, List<Point2D> salienceMultiScale){
-        Pair<Point2D, Double> minError = new Pair(salienceMultiScale.get(0), Double.MAX_VALUE);
+        Pair<Point2D, Double> minError = new Pair<>(salienceMultiScale.get(0), Double.MAX_VALUE);
         double iError;
         List<Point2D> originalSegment;
         Point2D iStartPoint;
+        Point2D iCurrentPoint;
         Point2D iEndPoint;
         for(int i = 0; i < salienceMultiScale.size(); i++){
             iStartPoint = salienceMultiScale.get((i-1) < 0 ? salienceMultiScale.size() - 1 : (i-1));
+            iCurrentPoint = salienceMultiScale.get(i);
             iEndPoint = salienceMultiScale.get((i+2) % salienceMultiScale.size());
             originalSegment = originalContour.getSegment(iStartPoint, iEndPoint);
             iError = errorSegments(originalSegment, iStartPoint, iEndPoint);
             if (iError < minError.getRight()){
-                minError = new Pair(i, iError);
+                minError = new Pair<>(iCurrentPoint, iError);
             }
         }
         return minError;
@@ -348,13 +351,13 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
 
     /**
      * Minimization algorithm for critic points.
-     * @param originalContour
-     * @param salienceMultiScale
-     * @param threshold
-     * @return
+     * @param originalContour contour original whose calculate everything.
+     * @param salienceMultiScale selected salience points in the algorithm.
+     * @param threshold error permitted.
+     * @return the list of the points that accomplish the error but using the less salience points possible.
      */
     private List<Point2D> minSalienceMultiScale(Contour originalContour, List<Point2D> salienceMultiScale, double threshold){
-        List<Point2D> minSalienceMultiScale = new ArrayList(salienceMultiScale);
+        List<Point2D> minSalienceMultiScale = new ArrayList<>(salienceMultiScale);
         Pair<Point2D, Double> iMinError = minSalienceError(originalContour, minSalienceMultiScale);
         Point2D removablePoint;
         while(iMinError.getRight() <= threshold && minSalienceMultiScale.size() > 2){
@@ -392,10 +395,10 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
      * error.
      * @return
      */
-    public List<Point2D> apply(Contour contour, double sigma, double threshold, double alphacut) {
+    public FuzzyContour apply(Contour contour, double sigma, double threshold, double alphacut) {
         double maxSigma = 0.1 * contour.size() > MAX_SIGMA ? MAX_SIGMA : 0.1 * contour.size();
 
-        List<Double> sigmaScales = new ArrayList();
+        List<Double> sigmaScales = new ArrayList<>();
         for (double iSigma = sigma; iSigma < maxSigma; iSigma *= sigma){
             sigmaScales.add(iSigma);
         }
@@ -418,10 +421,17 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
                 scalesFuzzyContours, threshold, pointsTrajectoryTree);
         minSalience = minSalienceMultiScale(firstContour, minSalience, threshold);
 
-        return minSalience;
+        FuzzyContour saliencePoints = new FuzzyContour("Contour.Salience Point Multi Scale");
+        FuzzyContour fuzzyContour =  scalesFuzzyContours.get(sigmaScales.stream().min(Double::compare).get());
+        for (Iterable.FuzzyItem<Point2D> item : fuzzyContour) {
+            Point2D element = item.getElement();
+            if (minSalience.contains(item.getElement()))
+                saliencePoints.add(element, item.getDegree());
+        }
+        return saliencePoints;
     }
 
-    public List<Point2D> apply(Contour contour, double sigma, double threshold){
+    public FuzzyContour apply(Contour contour, double sigma, double threshold){
         return apply(contour, sigma, threshold, DEFAULT_ALPHACUT);
     }
 }
