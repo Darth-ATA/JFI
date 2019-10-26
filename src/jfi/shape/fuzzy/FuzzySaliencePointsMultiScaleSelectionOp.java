@@ -222,7 +222,9 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
             List<Point2D> listOfPoints = new ArrayList<>(correspondencePoints.keySet());
             List<Point2D> newOriginalScaleCorrespondence = new ArrayList<>();
             for (Point2D pointCorrespondence : originalScaleCorrespondence) {
-                newOriginalScaleCorrespondence.addAll(correspondencePoints.get(nearestPoint(listOfPoints, pointCorrespondence)));
+                List<Point2D> correspondence = correspondencePoints.get(nearestPoint(listOfPoints, pointCorrespondence));
+                if (correspondence != null && !correspondence.isEmpty())
+                    newOriginalScaleCorrespondence.addAll(correspondence);
             }
             originalScaleCorrespondence = newOriginalScaleCorrespondence;
         }
@@ -399,6 +401,7 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
         double maxSigma = 0.1 * contour.size() > MAX_SIGMA ? MAX_SIGMA : 0.1 * contour.size();
 
         List<Double> sigmaScales = new ArrayList<>();
+        sigmaScales.add(1.0);
         for (double iSigma = sigma; iSigma < maxSigma; iSigma *= sigma){
             sigmaScales.add(iSigma);
         }
@@ -419,7 +422,8 @@ public class FuzzySaliencePointsMultiScaleSelectionOp extends FuzzySaliencePoint
         Map<Double, Map<Point2D, List<Point2D>>> pointsTrajectoryTree = pointsTrajectory(scalesFuzzyContours);
         List<Point2D> minSalience = getSalienceMultiScale(firstContour, null, null,
                 scalesFuzzyContours, threshold, pointsTrajectoryTree);
-        minSalience = minSalienceMultiScale(firstContour, minSalience, threshold);
+        if (minSalience.size() > 1)
+            minSalience = minSalienceMultiScale(firstContour, minSalience, threshold);
 
         FuzzyContour saliencePoints = new FuzzyContour("Contour.Salience Point Multi Scale");
         FuzzyContour fuzzyContour =  scalesFuzzyContours.get(sigmaScales.stream().min(Double::compare).get());
